@@ -2,6 +2,7 @@
 
 (defn doer-function
   [arg]
+  (spit "ricky.txt" "Hey")
   (str "this is pointless " arg))
 
 (defn -main
