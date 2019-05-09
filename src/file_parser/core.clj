@@ -10,7 +10,6 @@
 ;; Todo: Handle error paths
 ;; Todo: Add Spec documentation
 ;; Todo: Make sort handle asc/desc better
-;; Todo: Convert dates to actual dates
 ;; Todo: Move sample data to test folder
 
 (defn read-lines
@@ -41,10 +40,18 @@
          (map (partial zipmap fields))
          (map translate-dates))))
 
+(defn translate-date->string
+  [row]
+  (update row :DateOfBirth (fn [d] (time/format "M/d/yyyy" d))))
+
 (defn format-for-printing
   [data]
-  (->> data
-      (map (apply juxt +output-fields+))))
+  (let [header (map name +output-fields+)]
+    (->> data
+         (map translate-date->string)
+         (map (apply juxt +output-fields+))
+         (reduce conj [header])
+         (map #(str/join "\t" %)))))
 
 (defn sort-by-keys
   [data sort-key]
@@ -57,10 +64,27 @@
   (-> (read-lines filename)
       (delimited-strings->map)))
 
+(defn print-table
+  [table]
+  (doseq [line table]
+    (println line)))
+
 (defn produce-output
   [filename]
   (let [data (csv-file->map filename)]
-    (format-for-printing data)))
+    (-> data
+        (sort-by-keys [:Gender :LastName])
+        format-for-printing
+        print-table)
+    (-> data
+        (sort-by-keys [:DateOfBirth :LastName])
+        format-for-printing
+        print-table)
+    (-> data
+        (sort-by-keys [:LastName])
+        reverse
+        (format-for-printing)
+        print-table)))
 
 (defn -main
   [& args]
