@@ -11,17 +11,25 @@
     lines))
 
 (defn find-delimiter
+  "Look for a supported delimiter char in a string and return a regex pattern"
   [sample-string]
   (cond
-    (str/includes? sample-string "|") "|"
-    (str/includes? sample-string ",") ","
-    (str/includes? sample-string " ") " "))
+    (str/includes? sample-string "|") #"|"
+    (str/includes? sample-string ",") #","
+    (str/includes? sample-string " ") #"\s"))
+
+(defn delimited-strings->map
+  [[header & rows]]
+  (let [delimiter (find-delimiter (first rows))
+        fields (map keyword (str/split header delimiter))]
+    (->> rows
+         (map (fn [row] (str/split row delimiter)))
+         (map (partial zipmap fields)))))
 
 (defn csv-file->map
   [filename]
-  (let [[header & rows] (read-lines filename)
-        delimiter (find-delimiter (first rows))]
-    rows))
+  (-> (read-lines filename)
+      (delimited-strings->map)))
 
 (defn -main
   [& args]

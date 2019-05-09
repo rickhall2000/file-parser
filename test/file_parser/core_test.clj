@@ -56,10 +56,15 @@
 
 (deftest find-delimiter-test
   (testing "find-delimiter can find a pipe"
-    (is (= "|" (find-delimiter "This|Is|My|Test|String"))))
+    (is (= "|" (.toString (find-delimiter "This|Is|My|Test|String")))))
   (testing "find-delimiter can find a comma"
-    (is (= "," (find-delimiter "This,Is,My,Test,String"))))
+    (is (= "," (.toString (find-delimiter "This,Is,My,Test,String")))))
   (testing "find-delimiter can find a space"
-    (is (= " " (find-delimiter "This Is My Test String"))))
+    (is (= "\\s" (.toString (find-delimiter "This Is My Test String")))))
   (testing "find-delimiter doesn't find what isn't there"
     (is (nil? (find-delimiter "ThisIsABadlyFormattedString")))))
+
+(deftest delimited-strings->map-test
+  "delimited-strings->map returns a sequence of maps with the header fields as keys"
+  (is (= [{:A "2", :B "4"} {:A "5", :B "6"}]
+         (delimited-strings->map ["A,B" "2,4" "5,6"]))))
