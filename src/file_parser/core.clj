@@ -4,6 +4,8 @@
 
 (def s "sample.csv")
 
+(def +output-fields+ [:LastName :FirstName :Gender :FavoriteColor :DateOfBirth])
+
 (defn read-lines
   [filename]
   (let [x (slurp filename)
@@ -26,10 +28,16 @@
          (map (fn [row] (str/split row delimiter)))
          (map (partial zipmap fields)))))
 
+(defn format-for-printing
+  [data]
+  (->> data
+      (map (apply juxt +output-fields+))))
+
 (defn csv-file->map
   [filename]
   (-> (read-lines filename)
-      (delimited-strings->map)))
+      (delimited-strings->map)
+      (format-for-printing)))
 
 (defn -main
   [& args]

@@ -65,6 +65,14 @@
     (is (nil? (find-delimiter "ThisIsABadlyFormattedString")))))
 
 (deftest delimited-strings->map-test
-  "delimited-strings->map returns a sequence of maps with the header fields as keys"
-  (is (= [{:A "2", :B "4"} {:A "5", :B "6"}]
-         (delimited-strings->map ["A,B" "2,4" "5,6"]))))
+  (testing
+    "delimited-strings->map returns a sequence of maps with the header fields as keys"
+    (is (= [{:A "2", :B "4"} {:A "5", :B "6"}]
+           (delimited-strings->map ["A,B" "2,4" "5,6"])))))
+
+(deftest format-for-printing-test
+  (testing "passing in a seq of maps returns a seq of vectors of strings"
+    (is (= [["Wambach" "Abby" "Female" "Blue" "6/2/1980"]
+            ["Pogba" "Paul" "Male" "Red" "3/15/1993"]
+            ["Martinez" "Josef" "Male" "Peach" "5/19/1993"]])
+        (format-for-printing +sample-records+))))
