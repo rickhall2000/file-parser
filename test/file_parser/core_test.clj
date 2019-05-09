@@ -38,11 +38,19 @@
   ([] (make-csv-file +sample-records+)))
 
 (deftest main-only-works-with-one-arg-test
-  (with-redefs [file-parser.core/doer-function
+  (with-redefs [file-parser.core/csv-file->map
                 (constantly true)]
-    (testing "The main function calls the doer when it has 1 argument"
+    (testing "The main function calls csv-file->map when it has 1 argument"
       (is (true? (-main "test"))))
-    (testing "The main function does not call the doer when it has no arguments"
+    (testing "The main function does not call csv-file->map when it has no arguments"
       (is (nil? (-main))))
-    (testing "The main function does not call the doer when it has more than 1 argument"
+    (testing "The main function does not call csv-file->map when it has more than 1 argument"
       (is (nil? (-main "one" "two" "three"))))))
+
+(deftest read-lines-splits-at-linebreaks
+  (with-redefs [slurp (constantly "This is a
+                                    Long text string
+                                    That is on 3 lines.")]
+    (testing "readlines function returns a list of lines"
+      (is (= 3 (count (read-lines "hypothetical.file")))))))
+
