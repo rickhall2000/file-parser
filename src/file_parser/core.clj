@@ -10,10 +10,18 @@
         lines (str/split-lines x)]
     lines))
 
+(defn find-delimiter
+  [sample-string]
+  (cond
+    (str/includes? sample-string "|") "|"
+    (str/includes? sample-string ",") ","
+    (str/includes? sample-string " ") " "))
+
 (defn csv-file->map
   [filename]
-  (let [lines (read-lines filename)]
-    lines))
+  (let [[header & rows] (read-lines filename)
+        delimiter (find-delimiter (first rows))]
+    rows))
 
 (defn -main
   [& args]

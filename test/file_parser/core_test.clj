@@ -54,3 +54,12 @@
     (testing "readlines function returns a list of lines"
       (is (= 3 (count (read-lines "hypothetical.file")))))))
 
+(deftest find-delimiter-test
+  (testing "find-delimiter can find a pipe"
+    (is (= "|" (find-delimiter "This|Is|My|Test|String"))))
+  (testing "find-delimiter can find a comma"
+    (is (= "," (find-delimiter "This,Is,My,Test,String"))))
+  (testing "find-delimiter can find a space"
+    (is (= " " (find-delimiter "This Is My Test String"))))
+  (testing "find-delimiter doesn't find what isn't there"
+    (is (nil? (find-delimiter "ThisIsABadlyFormattedString")))))
