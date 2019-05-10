@@ -115,7 +115,7 @@
     (is (= '({:LastName "Wambach", :FirstName "Abby", :Gender "Female", :FavoriteColor "Blue"}
               {:LastName "Pogba", :FirstName "Paul", :Gender "Male", :FavoriteColor "Red"}
               {:LastName "Martinez", :FirstName "Josef", :Gender "Male", :FavoriteColor "Peach"})
-           (reverse (map #(dissoc % :DateOfBirth) (sort-by-keys +sample-records+ [:LastName])))))))
+           (map #(dissoc % :DateOfBirth) (sort-by-keys +sample-records+ [[:LastName :desc]]))))))
 
 (deftest main-only-works-with-one-arg-test
   (with-redefs [file-parser.core/produce-output
@@ -126,3 +126,22 @@
       (is (nil? (-main))))
     (testing "The main function does not call csv-file->map when it has more than 1 argument"
       (is (nil? (-main "one" "two" "three"))))))
+
+(deftest at-bottom-level?-test
+  (testing "At bottom level recognizes a vector of maps as reduced"
+    (is (at-bottom-level? [{:a 1} {:a 2}])))
+  (testing "At bottom level recognizes a vector of vector of maps as not reduced"
+    (is (false? (at-bottom-level? [[{:a 1} {:b 2}]]))))
+  (testing "At bottom level recognizes an empty vector as reduced"
+    (is (at-bottom-level? []))))
+
+(deftest reassemble-data-test
+  (testing "Reassemble data does not change a seq that is already reduced"
+    (let [sample-data [{:a 1} {:b 2}]]
+      (is (= sample-data (reassemble-data sample-data)))))
+  (testing "Reassemble data doesn't blow up with an empty vector"
+    (is (= [] (reassemble-data []))))
+  (testing "Reassemble data can flatten arbitrarily nested collections"
+    (is (= [{:a 1} {:b 2} {:c 3}]
+           (reassemble-data [[[{:a 1}]] [[{:b 2} {:c 3}]]])))))
+

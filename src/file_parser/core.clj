@@ -9,7 +9,6 @@
 
 ;; Todo: Handle error paths
 ;; Todo: Add Spec documentation
-;; Todo: Make sort handle asc/desc better
 ;; Todo: Move sample data to test folder
 
 (defn read-lines
@@ -58,11 +57,47 @@
          (reduce conj [header])
          (map #(str/join "\t" %)))))
 
+(defn at-bottom-level?
+  [data]
+  (or (map? (first data))
+      (empty? (first data))))
+
+(defn reassemble-data
+  [data]
+  (if (at-bottom-level? data)
+    data
+    (recur (apply concat data))))
+
+(defn sort-asc-or-desc
+  [key data]
+  (let [sort-fn (if (vector? key)
+                  (first key)
+                  key)
+        reverse-fn (if (and
+                         (vector? key)
+                         (= :desc (first (rest key))))
+                     reverse
+                     identity)]
+    (->> data
+         (sort-by sort-fn)
+         (reverse-fn)
+         (partition-by sort-fn))))
+
+(defn- sort*
+  [data remaining-keys]
+  (cond
+    (= 0 (count remaining-keys))
+    data
+    (not (at-bottom-level? data))
+    (map #(sort* % remaining-keys) data)
+    :else
+    (recur
+      (sort-asc-or-desc (first remaining-keys) data) (rest remaining-keys))))
+
 (defn sort-by-keys
-  [data sort-key]
-  (let [sort-fn (fn [x]
-                  (vec ((apply juxt sort-key) x)))]
-    (sort-by sort-fn data)))
+  [data sort-keys]
+  (let [sort-keys (take 5 sort-keys)]                        ; only supporting sorting to 5 levels for safety
+    (reassemble-data (sort* data sort-keys))))
 
 (defn csv-file->map
   [filename]
@@ -86,9 +121,12 @@
         format-for-printing
         print-table)
     (-> data
-        (sort-by-keys [:LastName])
-        reverse
+        (sort-by-keys [[:LastName :desc]])
         (format-for-printing)
+        print-table)
+    (-> data
+        (sort-by-keys [])
+        format-for-printing
         print-table)))
 
 (defn -main
