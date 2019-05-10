@@ -26,10 +26,19 @@
     (str/includes? sample-string ",") #","
     (str/includes? sample-string " ") #"\s"))
 
-(defn translate-dates
+(defn dob-string->date
   "Translate DateOfBirth to a date type"
   [row]
-  (update row :DateOfBirth (fn [s] (time/local-date "M/d/yyyy" s))))
+  (if (:DateOfBirth row)
+    (update row :DateOfBirth (fn [s]
+                               (when s (time/local-date "M/d/yyyy" s))))
+    row))
+
+(defn dob-date->string
+  [row]
+  (if (:DateOfBirth row)
+    (update row :DateOfBirth (fn [d] (time/format "M/d/yyyy" d)))
+    row))
 
 (defn delimited-strings->map
   [[header & rows]]
@@ -38,17 +47,13 @@
     (->> rows
          (map (fn [row] (str/split row delimiter)))
          (map (partial zipmap fields))
-         (map translate-dates))))
-
-(defn translate-date->string
-  [row]
-  (update row :DateOfBirth (fn [d] (time/format "M/d/yyyy" d))))
+         (map dob-string->date))))
 
 (defn format-for-printing
   [data]
   (let [header (map name +output-fields+)]
     (->> data
-         (map translate-date->string)
+         (map dob-date->string)
          (map (apply juxt +output-fields+))
          (reduce conj [header])
          (map #(str/join "\t" %)))))

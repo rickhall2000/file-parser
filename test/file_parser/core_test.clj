@@ -39,16 +39,6 @@
   ([data] (make-csv-file "sample.csv" data))
   ([] (make-csv-file +sample-records+)))
 
-(deftest main-only-works-with-one-arg-test
-  (with-redefs [file-parser.core/produce-output
-                (constantly true)]
-    (testing "The main function calls csv-file->map when it has 1 argument"
-      (is (true? (-main "test"))))
-    (testing "The main function does not call csv-file->map when it has no arguments"
-      (is (nil? (-main))))
-    (testing "The main function does not call csv-file->map when it has more than 1 argument"
-      (is (nil? (-main "one" "two" "three"))))))
-
 (deftest read-lines-splits-at-linebreaks
   (with-redefs [slurp (constantly "This is a
                                     Long text string
@@ -65,6 +55,31 @@
     (is (= "\\s" (.toString (find-delimiter "This Is My Test String")))))
   (testing "find-delimiter doesn't find what isn't there"
     (is (nil? (find-delimiter "ThisIsABadlyFormattedString")))))
+
+(deftest dob-string->date-test
+  (testing "dob-string->date converts :DateOfBirth to a date"
+    (is (= java.time.LocalDate
+           (type (:DateOfBirth (dob-string->date {:DateOfBirth "1/10/1973"}))))))
+  (testing "dob-string doesn't change anything else"
+    (let [test-map {:some-string "Some String"
+                    :DateOfBirth "1/10/1973"}]
+      (is (= (dissoc test-map :DateOfBirth)
+             (dissoc (dob-string->date test-map) :DateOfBirth)))))
+  (testing "dob-string->date doesn't blowup if DateOfBirth is missing"
+    (is (= {:test "some-string"} (dob-string->date {:test "some-string"})))))
+
+(deftest dob-date->string-test
+  (testing "dob-date->string converts :DateOfBirth to a string"
+    (is (= java.lang.String
+           (type (:DateOfBirth (dob-date->string
+                                 {:DateOfBirth (time/local-date "M/d/yyyy" "1/10/1973")}))))))
+  (testing "dob-string doesn't change anything else"
+    (let [test-map {:some-string "Some String"
+                    :DateOfBirth (time/local-date "M/d/yyyy" "1/10/1973")}]
+      (is (= (dissoc test-map :DateOfBirth)
+             (dissoc (dob-date->string test-map) :DateOfBirth)))))
+  (testing "dob-string->date doesn't blowup if DateOfBirth is missing"
+    (is (= {:test "some-string"} (dob-date->string {:test "some-string"})))))
 
 (deftest delimited-strings->map-test
   (testing
@@ -101,3 +116,13 @@
               {:LastName "Pogba", :FirstName "Paul", :Gender "Male", :FavoriteColor "Red"}
               {:LastName "Martinez", :FirstName "Josef", :Gender "Male", :FavoriteColor "Peach"})
            (reverse (map #(dissoc % :DateOfBirth) (sort-by-keys +sample-records+ [:LastName])))))))
+
+(deftest main-only-works-with-one-arg-test
+  (with-redefs [file-parser.core/produce-output
+                (constantly true)]
+    (testing "The main function calls csv-file->map when it has 1 argument"
+      (is (true? (-main "test"))))
+    (testing "The main function does not call csv-file->map when it has no arguments"
+      (is (nil? (-main))))
+    (testing "The main function does not call csv-file->map when it has more than 1 argument"
+      (is (nil? (-main "one" "two" "three"))))))
