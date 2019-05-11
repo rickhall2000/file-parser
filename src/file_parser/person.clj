@@ -20,6 +20,13 @@
     (update row :DateOfBirth (fn [d] (time/format "M/d/yyyy" d)))
     row))
 
+(defn strings->Person
+  [strings]
+  (->> strings
+      (zipmap +output-fields+)
+      (dob-string->date)
+      (map->Person)))
+
 (defn map-of-strings->Person
   [map-of-strings]
   (-> map-of-strings
