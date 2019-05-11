@@ -5,6 +5,11 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/data.csv "0.1.4"]
-                 [clojure.java-time "0.3.2"]]
+                 [org.clojure/data.json "0.2.6"]
+                 [clojure.java-time "0.3.2"]
+                 [io.pedestal/pedestal.service "0.5.5"]
+                 [io.pedestal/pedestal.route "0.5.5"]
+                 [io.pedestal/pedestal.jetty "0.5.5"]
+                 [org.slf4j/slf4j-simple "1.7.21"]]
   :repl-options {:init-ns file-parser.core}
   :main file-parser.core)

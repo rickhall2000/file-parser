@@ -1,14 +1,80 @@
 (ns file-parser.core
   (:require [clojure.string :as str]
             [file-parser.sorter :refer [sort-by-keys]]
-            [file-parser.person :as person])
+            [file-parser.person :as person]
+            [io.pedestal.http :as http]
+            [io.pedestal.http.route :as route])
   (:import [file_parser.person Person]))
 
-(def s "sample.csv")
-
-
 ;; Todo: Handle error paths
-;; Todo: Add Spec documentation
+
+(def person-data (atom []))
+
+(defn response [status body & {:as headers}]
+  {:status status :body body :headers headers})
+
+(def ok       (partial response 200))
+(def created  (partial response 201))
+
+(def echo
+  {:name :echo
+   :enter
+         (fn [context]
+           (let [request (:request context)
+                 response (ok context)]
+             (assoc context :response response)))})
+
+(defn get-data
+  ([sort]
+   (let [data @person-data]
+     (if sort
+       (sort-by-keys data sort)
+       data)))
+  ([] (get-data nil)))
+
+(def person-list
+  {:name :person-list
+   :enter
+         (fn [context]
+           (let [request (:request context)]
+             (assoc context :response (ok (map person/Person->json (get-data))))))})
+
+(def person-by-gender
+  {:name :person-by-gender
+   :enter
+         (fn [context]
+           (let [request (:request context)]
+             (assoc context :response (ok (map person/Person->json (get-data [:Gender :LastName]))))))})
+
+(def person-by-birthdate
+  {:name :person-by-birthdate
+   :enter
+         (fn [context]
+           (let [request (:request context)]
+             (assoc context :response (ok (map person/Person->json (get-data [:DateOfBirth]))))))})
+
+(def person-by-name
+  {:name :person-by-name
+   :enter
+         (fn [context]
+           (let [request (:request context)]
+             (assoc context :response (ok (map person/Person->json (get-data [[:LastName :desc]]))))))})
+
+(def routes
+  (route/expand-routes
+    #{["/records" :post echo :route-name :person-create]
+      ["/records" :get person-list :route-name :person-list]
+      ["/records/gender" :get person-by-gender :route-name :person-by-gender]
+      ["/records/birthdate" :get person-by-birthdate :route-name :person-by-birthdate]
+      ["/records/name" :get person-by-name :route-name :person-by-name]}))
+
+(def service-map
+  {::http/routes routes
+   ::http/type   :jetty
+   ::http/port   8890})
+
+(defn start []
+  (http/start (http/create-server service-map)))
 
 (defn read-lines
   [filename]
@@ -44,8 +110,8 @@
     (println line)))
 
 (defn produce-output
-  [filename]
-  (let [data (csv-file->map filename)
+  []
+  (let [data @person-data
         sorts [[:Gender :LastName]
                [:DateOfBirth :LastName]
                [:LastName :desc]]]
@@ -55,9 +121,16 @@
           person/format-for-printing
           print-table))))
 
+(defn make-data
+  [filename]
+  (reset! person-data (csv-file->map filename)))
+
 (defn -main
   [& args]
   (if
     (= (count args) 1)
-    (produce-output (first args))
+    (do
+      (make-data (first args))
+      (produce-output)
+      (start))
     (println "Please pass a single argument, containing the filename you wish to load")))

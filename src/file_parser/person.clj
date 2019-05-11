@@ -26,6 +26,12 @@
       (dob-string->date)
       (map->Person)))
 
+(defn Person->map-of-strings
+  [person]
+  (-> person
+      (select-keys +output-fields+)
+      (dob-date->string)))
+
 (defn format-for-printing
   [data]
   (let [header (map name +output-fields+)]
@@ -34,3 +40,13 @@
          (map (apply juxt +output-fields+))
          (reduce conj [header])
          (map #(str/join "\t" %)))))
+
+(defn Person->json
+  [person]
+  (str
+    (->> person
+         (Person->map-of-strings)
+         (reduce-kv
+           (fn [m k v] (str m (pr-str (name k)) ":" (pr-str v)))
+           "{"))
+    "}"))
