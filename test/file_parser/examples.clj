@@ -21,6 +21,13 @@
     :FavoriteColor "Peach"
     :DateOfBirth (time/local-date 1993 5 19)}])
 
+(def +example-person-string-map+
+  {:LastName "Messi"
+   :FirstName "Lionel"
+   :Gender "Male"
+   :FavoriteColor "Blue"
+   :DateOfBirth "6/24/1987"})
+
 (defn map->rows
   [data]
   (let [header (-> data first keys)
