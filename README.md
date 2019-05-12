@@ -11,10 +11,29 @@ Dates should be in the format M/D/YYYY M/D/YYYY.
 Call with
 `lein run <filename>`
 
+The webserver runs on port 8890.
+
+A list of records may be accessed by doing a get of the /records route.
+
+```
+curl localhost:8890/records
+```
+
+3 sorts are available:
+- Gender `curl localhost:8890/records/gender`
+- Birthdate `curl localhost:8890/records/birthdate`
+- Last Name (descending) `curl localhost:8890/records/name`
+
+To add new records, send a post to /records with a `person` body parameter containing a comma, pipe,
+or space delimited string.
+
+```
+curl -XPOST -d "person=Hamm,Mia,Female,Blue,3/17/1972" "http://localhost:8890/records"
+```
 
 ## License
 
-Copyright © 2019 FIXME
+Copyright © 2019 Rick Hall
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at
