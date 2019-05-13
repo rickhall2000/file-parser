@@ -26,8 +26,10 @@
   [& args]
   (if
     (= (count args) 1)
-    (do
-      (db/make-data (first args))
-      (produce-output)
-      (api/start))
+    (let [data-load-result (db/make-data (first args))]
+      (if (= (type data-load-result) java.lang.String)
+        (println "Loading data failed: " data-load-result)
+        (do
+          (produce-output)
+          (api/start))))
     (println "Please pass a single argument, containing the filename you wish to load")))

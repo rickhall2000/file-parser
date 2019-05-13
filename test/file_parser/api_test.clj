@@ -54,4 +54,18 @@
                             :post "/records"
                             :headers {"Content-Type" "application/x-www-form-urlencoded"}
                             :body "person=Hamm Mia Female Blue 3/17/1972"))))
-      (is (= 1 (count @db/person-data))))))
+      (is (= 1 (count @db/person-data)))))
+  (testing "Posting invalid data returns a 400"
+    (is (= 400 (:status (test/response-for
+                          (:io.pedestal.http/service-fn server)
+                          :post "/records"
+                          :headers {"Content-Type" "application/x-www-form-urlencoded"}
+                          :body "person=Han Solo, Captain of the Millennium Falcon"))))))
+
+(deftest non-existext-route-test
+  (testing "Hitting a route that doesn't exist returns a 404"
+    (is (= 404
+           (:status
+             (test/response-for
+               (:io.pedestal.http/service-fn server)
+               :get "some/other/route"))))))

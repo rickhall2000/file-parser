@@ -9,10 +9,13 @@
 (defn dob-string->date
   "Translate DateOfBirth to a date type"
   [row]
-  (if (:DateOfBirth row)
-    (update row :DateOfBirth (fn [s]
-                               (when s (time/local-date "M/d/yyyy" s))))
-    row))
+  (try
+    (if (:DateOfBirth row)
+      (update row :DateOfBirth (fn [s]
+                                 (when s (time/local-date "M/d/yyyy" s))))
+      row)
+    (catch Throwable t
+      "Error parsing date")))
 
 (defn dob-date->string
   [row]
@@ -22,10 +25,15 @@
 
 (defn strings->Person
   [strings]
-  (->> strings
-      (zipmap +output-fields+)
-      (dob-string->date)
-      (map->Person)))
+  {:pre [(= 5 (count strings))]}
+  (try
+    (let [person-map (->> strings
+                          (zipmap +output-fields+)
+                          (dob-string->date))]
+      (if (= java.lang.String (type person-map))
+        person-map
+        (map->Person person-map)))
+    (catch Throwable t "Error creating person from strings")))
 
 (defn map-of-strings->Person
   [map-of-strings]

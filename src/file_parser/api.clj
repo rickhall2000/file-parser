@@ -15,6 +15,11 @@
   {:status 201 :body body
    :headers headers})
 
+(defn error
+  [body & {:as headers}]
+  {:status 400 :body body
+   :headers headers})
+
 (defn people->json
   [people]
   (str
@@ -52,8 +57,10 @@
    :enter (fn [context]
             (let [new-person (get-in context [:request :form-params :person])
                   person (db/line->Person new-person)]
-              (db/add-person person)
-              (assoc context :response (created "Person added"))))})
+              (if (= java.lang.String (type person))
+                (assoc context :response (error "Failure parsing person data"))
+                (do (db/add-person person)
+                    (assoc context :response (created "Person added"))))))})
 
 (def routes
   (route/expand-routes

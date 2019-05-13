@@ -33,21 +33,35 @@
 
 (defn line->Person
   ([line delimiter]
-   (-> (str/split line delimiter)
-       (person/strings->Person)))
+   (try
+     (-> (str/split line delimiter)
+         (person/strings->Person))
+     (catch Throwable t
+       "Error processing line")))
   ([line]
     (line->Person line (find-delimiter line))))
 
-(defn delimited-strings->map
+(defn delimited-strings->Persons
   [[_header & rows]]
-  (let [delimiter (find-delimiter (first rows))]
-    (map #(line->Person % delimiter) rows)))
+  (let [delimiter (find-delimiter (first rows))
+        results (map #(line->Person % delimiter) rows)]
+    (if (some #(= java.lang.String (type %)) results)
+      "Error processing file"
+      results)))
 
-(defn csv-file->map
+(defn csv-file->Persons
   [filename]
-  (-> (read-lines filename)
-      (delimited-strings->map)))
+  (try
+    (-> (read-lines filename)
+        (delimited-strings->Persons))
+    (catch java.io.FileNotFoundException e
+      "File not found")
+    (catch Throwable t
+      (str "An error occurred" (type t)))))
 
 (defn make-data
   [filename]
-  (reset! person-data (csv-file->map filename)))
+  (let [data (csv-file->Persons filename)]
+    (if (= (type data) java.lang.String)
+      data
+      (reset! person-data data))))
