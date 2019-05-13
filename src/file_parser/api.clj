@@ -5,35 +5,47 @@
             [file-parser.data :as db]
             [file-parser.person :as person]))
 
-(defn response [status body & {:as headers}]
-  {:status status :body body :headers headers})
+(defn ok
+  [body & {:as headers}]
+  {:status 200 :body body
+   :headers (assoc headers "Content-Type" "application/json")})
 
-(def ok       (partial response 200))
-(def created  (partial response 201))
+(defn created
+  [body & {:as headers}]
+  {:status 201 :body body
+   :headers headers})
+
+(defn people->json
+  [people]
+  (str
+    (->> people
+         (map person/Person->json)
+         (reduce str "["))
+    "]"))
 
 (def person-list
   {:name :person-list
    :enter
          (fn [context]
-           (assoc context :response (ok (map person/Person->json (db/get-data)))))})
+           (assoc context :response (ok (people->json (db/get-data)))))})
 
 (def person-by-gender
   {:name :person-by-gender
    :enter
          (fn [context]
-           (assoc context :response (ok (map person/Person->json (db/get-data [:Gender :LastName])))))})
+           (assoc context :response (ok (people->json (db/get-data [:Gender :LastName])))))})
 
 (def person-by-birthdate
   {:name :person-by-birthdate
    :enter
          (fn [context]
-           (assoc context :response (ok (map person/Person->json (db/get-data [:DateOfBirth])))))})
+           (assoc context :response (ok (people->json (db/get-data [:DateOfBirth])))))})
 
 (def person-by-name
   {:name :person-by-name
    :enter
          (fn [context]
-           (assoc context :response (ok (map person/Person->json (db/get-data [[:LastName :desc]])))))})
+           (assoc context :response (ok (people->json (db/get-data [[:LastName :desc]])))))})
 
 (def person-create
   {:name :person-create

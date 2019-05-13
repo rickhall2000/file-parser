@@ -9,7 +9,13 @@ Dates should be in the format M/D/YYYY M/D/YYYY.
 
 ## Usage
 Call with
-`lein run <filename>`
+```lein run <filename>```
+
+To run with an included sample dataset containing soccer players run
+
+```
+lein run test/data/sample.csv
+```
 
 The webserver runs on port 8890.
 
