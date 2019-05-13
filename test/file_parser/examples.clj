@@ -1,8 +1,7 @@
 (ns file-parser.examples
   (:require [java-time :as time]
             [clojure.data.csv :as csv]
-            [clojure.java.io :as io]
-            ))
+            [clojure.java.io :as io]))
 
 (def +sample-records+
   [{:LastName "Wambach"

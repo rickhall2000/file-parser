@@ -14,4 +14,3 @@
       (is (nil? (-main))))
     (testing "The main function does not call csv-file->map when it has more than 1 argument"
       (is (nil? (-main "one" "two" "three"))))))
-

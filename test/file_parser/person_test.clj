@@ -61,7 +61,7 @@
         (format-for-printing +sample-records+))))
 
 (deftest Person->json-test
-  (testing "Person->json evaluates to equivelent json as json/write-str"
+  (testing "Person->json evaluates to equivalent json as json/write-str"
     (let [example (->Person "Hall" "Rick" "Male" "Blue" (time/local-date "M/d/yyyy" "1/10/1973"))]
       (is (= (json/read-str (json/write-str (Person->map-of-strings example)))
              (json/read-str (Person->json example)))))))

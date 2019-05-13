@@ -4,8 +4,6 @@
             [file-parser.data :as db]
             [file-parser.api :as api]))
 
-;; Todo: Handle error paths
-
 (defn print-table
   [table]
   (doseq [line table]

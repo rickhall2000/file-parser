@@ -45,7 +45,7 @@
               "Wambach,Abby,Female,Blue,6/2/1980"
               "Pogba,Paul,Male,Red,3/15/1993"
               "Martinez,Josef,Male,Peach,5/19/1993"]))))
-  (testing "delimited-strings->Persons returns Error processing file when it gets a bunch of gibberisj"
+  (testing "delimited-strings->Persons returns Error processing file when it gets a bunch of gibberish"
     (is (= "Error processing file"
            (delimited-strings->Persons ["To be or not to be, that is the question:"
                                         "Whether it is nobler in the mind to suffer"

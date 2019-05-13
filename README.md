@@ -5,13 +5,13 @@ This project accepts a file in one of 3 formats: pipe-delimited, comma-delimited
 
 It expects a header row, and exactly 5 fields: last name, first name, gender, date of birth and favorite color.
 
-Dates should be in the format M/D/YYYY M/D/YYYY.
+Dates should be in the format M/D/YYYY.
 
 ## Usage
 Call with
 ```lein run <filename>```
 
-To run with an included sample dataset containing soccer players run
+To run with an included sample dataset containing soccer players run:
 
 ```
 lein run test/data/sample.csv
